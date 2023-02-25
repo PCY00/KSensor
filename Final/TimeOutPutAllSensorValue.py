@@ -11,7 +11,7 @@ ser0 = serial.Serial(port0, baudrate = brate0, timeout = None)
 ser1 = serial.Serial(port1, baudrate = brate1, timeout = None)
 
 print('%s and %s' % (ser0.name, ser1.name))
-print('Time, Dust1, Dust2, Dust3, Temp, Humi, Ozone, SO2, No2, CO, WindSpeed, WindDirection\n') 
+print('Time, Dust1, Dust2, Dust3, Temp, Humi, Ozone, SO2, NO2, CO, WindSpeed, WindDirection\n') 
 
 while True:
 	now = datetime.now()
