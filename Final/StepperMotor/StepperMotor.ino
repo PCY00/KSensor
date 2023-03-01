@@ -1,6 +1,6 @@
-  #include <Arduino.h>
-  #include <AccelStepper.h>
-  #define motorInterfaceType 1
+#include <Arduino.h>
+#include <AccelStepper.h>
+#define motorInterfaceType 1
 
 #define BOTTOM_SPEED 100
 
