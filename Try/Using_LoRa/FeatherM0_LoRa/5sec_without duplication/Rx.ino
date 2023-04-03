@@ -52,6 +52,8 @@ void setup() {
 }
 
 void loop() {
+  String dataString = "";
+  
   if(runEvery(5000)){
     if(Tx1_status == true){
       
@@ -67,8 +69,6 @@ void loop() {
           delay(10);
         }
       }
-      Serial.print("1 : ");
-      Serial.println(saveDust[0]);
       Tx1_status = false;
       Tx2_status = true;
     }
@@ -87,20 +87,23 @@ void loop() {
           delay(10);
         }
       }
-      Serial.print("2 : ");
-      Serial.println(saveDust[1]);
       Tx2_status = false;
       Tx3_status = true;
     }
     delay(100);
   
     if(Tx3_status == true){
-      Serial.println("3");
-  
+      saveDust[2] = 0x03;
       Tx3_status = false;
       Tx1_status = true;
     }
     delay(100);
+
+    for(int i = 0; i < 3; i++){
+      dataString += saveDust[i];
+      dataString += " ";
+    }
+    Serial.println(dataString);
   }
   
 }
