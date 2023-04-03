@@ -10,15 +10,13 @@
 
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 
-boolean Tx1_status = true;
-boolean Tx2_status = false;
-boolean Tx3_status = false;
 
-uint16_t saveDust[3];
 
-uint8_t startCode[3] = {0x01,0x02,0x03};
-boolean runEvery(unsigned long interval);
+uint16_t saveDust[3] = {0};
+const uint8_t startCode[3] = {0x01,0x02,0x03};
+bool txStatus[] = {true, false, false};
 
+bool runEvery(unsigned long interval);
 void receiveDust(uint8_t* msg, uint8_t num);
 
 void setup() {
@@ -52,80 +50,49 @@ void setup() {
 }
 
 void loop() {
-  String dataString = "";
-  
   if(runEvery(5000)){
-    if(Tx1_status == true){
-      
-      rf95.send(&startCode[0], 1);
-      rf95.waitPacketSent();
-  
-      if(rf95.available()){
-        uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
-        uint8_t len = sizeof(buf);
-  
-        if(rf95.recv(buf, &len)){
-          receiveDust(buf, 1);
-          delay(10);
-        }
-      }
-      Tx1_status = false;
-      Tx2_status = true;
-    }
-    delay(100);
-    
-    if(Tx2_status == true){
-      rf95.send(&startCode[1], 1);
-      rf95.waitPacketSent();
-  
-      if(rf95.available()){
-        uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
-        uint8_t len = sizeof(buf);
-  
-        if(rf95.recv(buf, &len)){
-          receiveDust(buf, 2);
-          delay(10);
-        }
-      }
-      Tx2_status = false;
-      Tx3_status = true;
-    }
-    delay(100);
-  
-    if(Tx3_status == true){
-      saveDust[2] = 0x03;
-      Tx3_status = false;
-      Tx1_status = true;
-    }
-    delay(100);
+    String dataString = "";
 
-    for(int i = 0; i < 3; i++){
+    for(uint8_t i = 0; i < 3; i++){
+      if(txStatus[i]){
+        rf95.send(&startCode[i], 1);
+        rf95.waitPacketSent();
+
+        if(rf95.available()){
+          uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
+          uint8_t len = sizeof(buf);
+          
+          if(rf95.recv(buf, &len)){
+            receiveDust(buf, i + 1);
+            delay(10);
+          }
+        }
+        txStatus[i] = false;
+        txStatus[(i+1)%3] = true;
+      }
+      delay(100);
+    }
+
+    for(uint8_t i = 0; i < 3; i++){
       dataString += saveDust[i];
       dataString += " ";
     }
     Serial.println(dataString);
   }
-  
+  delay(100);
 }
 
 void receiveDust(uint8_t* msg, uint8_t num){
-  //Serial.print("Dust_");
-  //Serial.print(num);
-  //Serial.print(": ");
-  
-  int16_t pm2_5;
-  pm2_5 = msg[1] << 8 | msg[0];
+  int16_t pm2_5 = msg[1] << 8 | msg[0];
   //save value
   saveDust[num - 1] = pm2_5;
-  //Serial.print(pm2_5);
-  //Serial.println();
 }
 
-boolean runEvery(unsigned long interval){
+bool runEvery(unsigned long interval){
   static unsigned long previousMillis = 0;
   unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis >= interval)
-  {
+  
+  if (currentMillis - previousMillis >= interval){
     previousMillis = currentMillis;
     return true;
   }
