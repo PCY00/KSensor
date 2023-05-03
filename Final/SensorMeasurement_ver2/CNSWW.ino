@@ -16,6 +16,9 @@ void setup(){
   Serial3.begin(9600);        //SO2
   Serial2.begin(9600);        //NO2
   Serial1.begin(9600);        //CO
+  
+  Serial.print("DataType: ");
+	Serial.println("CO NO2 SO2 WindDirect WindSpeed");
   delay(1000);
 }
 
