@@ -4,6 +4,9 @@
 #incldue <vector>
 #include <string>
 
+#include <chrono>
+#include <thread>
+
 #include <curl/curl.h>
 
 using namespace std;
@@ -14,13 +17,17 @@ string getValueFromCSV(const string& filename, int row, int col);
 void performPOSTRequest(const string& url, const string& post_data);
 
 int main(){
-    string value = getValueFromCSV("dust.csv", 0, 2);
-    int test = stoi(value);
+    while(1){
+        string value = getValueFromCSV("dust.csv", 0, 2);
+        int test = stoi(value);
 
-    string post_data = "{\"m2m:cin\": {\"con\": \"" + to_string(test) + "\"}}";
-    performPOSTRequest(url_post, post_data);
+        string post_data = "{\"m2m:cin\": {\"con\": \"" + to_string(test) + "\"}}";
+        performPOSTRequest(url_post, post_data);
 
-    cout << "value: " << value << endl;
+        cout << "value: " << value << endl;
+
+        this_thread::sleep_for(chrono::seconds(24*60*60));
+    }
 
     return 0;
 }
