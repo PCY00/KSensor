@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#incldue <vector>
+#include <vector>
 #include <string>
 
 #include <chrono>
@@ -26,7 +26,7 @@ int main(){
 
         cout << "value: " << value << endl;
 
-        this_thread::sleep_for(chrono::seconds(24*60*60));
+        this_thread::sleep_for(chrono::seconds(60*60));
     }
 
     return 0;
