@@ -14,6 +14,7 @@ StepperMoter::StepperMoter(int stepPin, int dirPin, int enPin){
 }
 
 //1600step = 1round, speed = 0.1 ~ 2 (권장 1)
+//음수일 때 와 양수일 때로 나누어 모터 방향 제어
 void StepperMoter::moveto(int speeds, float stepperRound){
   int stepperRotations_t = (int)(abs(stepperRound*1600));
   if(stepperRound < 0){
