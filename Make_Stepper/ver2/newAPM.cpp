@@ -1,20 +1,5 @@
 #include "newAPM.h"
 
-//Bottom Moter driver Pin setting
-newAPM::newAPM(int stepPin_1, int dirPin_1, int enPin_1){
-  this->stepPin_1 = stepPin_1;
-  this->dirPin_1 = dirPin_1;
-  this->enPin_1 = enPin_1;
-
-  pinMode(stepPin_1, OUTPUT);
-  pinMode(dirPin_1, OUTPUT);
-  pinMode(enPin_1, OUTPUT);
-
-  digitalWrite(enPin_1, HIGH);
-  digitalWrite(dirPin_1, HIGH);
-}
-
-//Top Moter driver Pin setting
 newAPM::newAPM(int stepPin_0, int dirPin_0, int enPin_0, int stepPin_1, int dirPin_1, int enPin_1, int stepPin_2, int dirPin_2, int enPin_2, int stepPin_3, int dirPin_3, int enPin_3, int swich_1, int swich_2, int swich_3){
     this->stepPin_0 = stepPin_0;
     this->dirPin_0 = dirPin_0;
