@@ -22,7 +22,14 @@
 
 //모터 속도
 #define speeds 1
-//bottom 몇 바퀴 돌거냐
+/*
+ * 여기서 모터 한바퀴는 1600스텝이다.
+ * bottom일 경우 APM 한바퀴가 몇인지 알아야함
+ * top일 경우 초기화후 위로 올라가는게 몇 까지 올라가야하는지 알아야함
+ * 
+ * 위를 토대로 rounds를 설정해줘야함
+ * 기본값으로 4800이 한바퀴라고 설정을 해둠 (조정필요)
+*/
 #define rounds 1
 
 StepperMoter bottom(step_B, dir_B, en_B);
