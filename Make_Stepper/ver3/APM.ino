@@ -32,10 +32,10 @@
 */
 #define rounds 1
 
-StepperMoter bottom(step_B, dir_B, en_B);
-StepperMoter top_1(step_T1, dir_T1, en_T1, swich_1);
-StepperMoter top_2(step_T2, dir_T2, en_T2, swich_2);
-StepperMoter top_3(step_T3, dir_T3, en_T3, swich_3);
+APM bottom(step_B, dir_B, en_B);
+APM top_1(step_T1, dir_T1, en_T1, swich_1);
+APM top_2(step_T2, dir_T2, en_T2, swich_2);
+APM top_3(step_T3, dir_T3, en_T3, swich_3);
 
 void setup(){
   top_1.motorTopSetup();
