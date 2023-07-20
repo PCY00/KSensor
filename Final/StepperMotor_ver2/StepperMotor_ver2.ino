@@ -55,7 +55,7 @@ void setup(){
   digitalWrite(dir_3, LOW);
   digitalWrite(dir_4, LOW);
   while(1){
-    if(digitalRead(swich) == LOW){
+    if(digitalRead(swich_1) == LOW && digitalRead(swich_2) == LOW && digitalRead(swich_3) == LOW){
       break;
     }else{
       digitalWrite(step_2, HIGH);
