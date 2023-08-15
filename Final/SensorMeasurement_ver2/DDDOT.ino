@@ -46,7 +46,7 @@ void setup() {
 
 void loop() {
 
-  if(runEvery(5000)){
+  if(runEvery(30000){
     int ozoneConcentration = Ozone.readOzoneData(COLLECT_NUMBER);
 
     pms1.requestRead();
