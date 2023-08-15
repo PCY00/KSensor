@@ -31,7 +31,7 @@ void loop(){
   int wind_direction_val = analogRead(A0);
   float wind_direction_outvoltage = wind_direction_val * 5 / 1023.0;
 
-  if(runEvery(5000)){
+  if(runEvery(30000)){
     //SO2, NO2, CO
     #if PollingMode
       Serial1.write('\r');
