@@ -38,9 +38,10 @@ m_3::m_3(int enPin, int stepPin, int dirPin, int swich){
     digitalWrite(dirPin, LOW);
 }
 
-void TopSetup(){
+void m_3::TopSetup(){
     while(1){
         if(digitalRead(swich) == LOW){
+            digitalWrite(dirPin, HIGH);
             break;
         }
         digitalWrite(stepPin, HIGH);
