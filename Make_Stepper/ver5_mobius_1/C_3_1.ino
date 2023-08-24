@@ -6,6 +6,7 @@ m_3_1 top_2(8, 9, 10, 22);
 m_3_1 top_3(11, 12, 13, 24);
 
 void setup() {
+  Serial.begin(9600);
   // put your setup code here, to run once:
   bottom.setRound(7200);
   top_1.setRound(56000);
@@ -13,18 +14,22 @@ void setup() {
   top_3.setRound(56000);
 
   //10ms down
-  bottom.setspeed(300);
+  bottom.setspeed(1000);
   top_1.setspeed(300);
   top_2.setspeed(300);
   top_3.setspeed(300);
 
   //bottom motor setup
-  bottom.MotorSetup();
+  bottom.BottomSetup();
 
   //top motor setup
-  top_1.MotorSetup();
-  top_2.MotorSetup();
-  top_3.MotorSetup();
+  top_1.TopSetup();
+  top_2.TopSetup();
+  top_3.TopSetup();
+
+  bottom.stopMotor();
+  top_1.stopMotor();
+  
 
 }
 
@@ -36,18 +41,23 @@ void loop() {
     //pm1, bottom 모터를 제어할 때 사용
     //mqtt로 제어를 받으면 해당되는 모터가 점검 즉 위치를 초기화할 때 다른 모터들도 멈추고, 이후 모든 모터들이 다시 움직임
     if (receivedString.startsWith("pm1")) {
-      top_1.MotorSetup();
+      top_1.startMotor();
+      top_1.TopSetup();
       int num = receivedString.substring(4).toInt(); // 문자열에서 숫자 부분 추출
-      top_1.setRound(num);
+      Serial.println(num);
+      top_1.TopLocation(num);
       
     } else if (receivedString.startsWith("bottom")){
-      bottom.MotorSetup();
-      int num = receivedString.substring(4).toInt();
-      bottom.setRound(num);
+      bottom.startMotor();
+      bottom.BottomSetup();
+      int num = receivedString.substring(7).toInt();
+      Serial.println(num);
+      bottom.BottomLocation(num);
     }
   }
+  
   bottom.moveto();
   top_1.moveto();
-  top_2.moveto();
-  top_3.moveto();
+  top_2.moveto_pm();
+  top_3.moveto_pm();
 }
