@@ -7,14 +7,26 @@ class m_3_1
         m_3_1(int enPin, int stepPin, int dirPin, int swich);
 
         //reset motor
-        void MotorSetup();
+        void BottomSetup();
+        void TopSetup();
 
-        void setspeed(int inputSpeed);
+        void setspeed(long inputSpeed);
         void moveto();
         void moveStep(long steps);
         void setRound(long inputRound);
         void setDiraction();
+        void stopMotor();
+        void startMotor();
 
+        //pm2,3을 위한 함수
+        void moveto_pm();
+
+        //pm1의 위치 조정을 위한 함수
+        void TopLocation(int num);
+
+        //bottom의 위치 조정을 위한 함수
+        void BottomLocation(int inputAngle);
+        
     private:
         //motor pin
         int enPin;
