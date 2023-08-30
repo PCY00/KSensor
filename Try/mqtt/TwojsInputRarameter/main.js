@@ -9,7 +9,7 @@ rl.question('Enter a value: ', (value) => {
     rl.close();
 
     const { fork } = require('child_process');
-    const child = fork('mi.js', [value]);
+    const child = fork('run.js', [value]);
 
     child.on('close', (code) => {
         console.log(`mi.js process exited with code ${code}`);
