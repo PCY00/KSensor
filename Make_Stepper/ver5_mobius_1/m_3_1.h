@@ -1,3 +1,6 @@
+/*
+APM의 모터를 구동하기 위한 라이브러리 ver1.0
+*/
 #ifndef m_3_1_h
 #define m_3_1_h
 
