@@ -27,7 +27,7 @@ try:
     ser1 = serial.Serial(port1, baudrate = brate1, timeout = None)
     ser2 = serial.Serial(port2, baudrate = brate2, timeout = None)
     print('%s and %s and %s' %(ser2.name, ser0.name, ser1.name))
-    print('Time, NPM, Dust1, Dust2, Dust3, Temp, Humi, Ozone, CO, NO2, SO2, WindDirection, WindSpeed\n') 
+    #print('Time, NPM, Dust1, Dust2, Dust3, Temp, Humi, Ozone, CO, NO2, SO2, WindDirection, WindSpeed\n') 
 except Exception as err:
     print("Serial err:", err)
 
