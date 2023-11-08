@@ -1,7 +1,7 @@
 /*
  * 6초에 한번 씩 미세먼지 측정을 하는 모듈
- * 따라서 6초에 들어오는 값을 50번 더하여 50을 나눈 값 출력
- * 5분 마다 값 출력
+ * 따라서 6초에 들어오는 값을 10번 더하여 10을 나눈 값 출력
+ * 1분 마다 값 출력
  */
 
 #include <SoftwareSerial.h>
@@ -20,10 +20,12 @@ byte Data[24];
 int save = 0;       //10개 인지 확인용
 int ByteSum[3];    //byte 합
 
+bool runEvery(unsigned long interval);
+
 void setup() {
   Serial.begin(19200);
   pms.begin(19200);
-  //Serial.println("PM1 PM2.5 PM10");
+  Serial.println("PM1 PM2.5 PM10");
   //초기 설정
   for(int i = 0 ; i < 3; i++){
     ByteSum[i] = 0;
@@ -31,25 +33,19 @@ void setup() {
 }
 
 void loop() {
-  unsigned long previousMillis = 0;
-  unsigned long interval = 60000000; // 6 seconds in microseconds
-  static unsigned int minuteCounter = 0;
-
-  unsigned long currentMillis = micros();
-
-  if (currentMillis - previousMillis >= interval) {
-    send_value_query();
-    int result = parse_value_return();
-    previousMillis = currentMillis;
-
-    if (save == 50) {
-      Data_show();
-      save = 0;
-      for (int i = 0; i < 3; i++) {
-        ByteSum[i] = 0;
-      }
-    }
-  }
+  if(runEvery(6000)){
+   send_value_query();
+   int result = parse_value_return();
+   Serial.println(save);
+   if(save == 50){
+     Serial.println("come");
+     Data_show();
+     save = 0;
+     for(int i = 0 ; i < 3; i++){
+       ByteSum[i] = 0;
+     }
+   } 
+ }
 }
 
 //요청
@@ -129,4 +125,15 @@ void Data_show(){
     Serial.print(ByteSum[i] / 10);
   }
   Serial.println();
+}
+
+bool runEvery(unsigned long interval){
+  static unsigned long previousMillis = 0;
+  unsigned long currentMillis = millis();
+  
+  if (currentMillis - previousMillis >= interval){
+    previousMillis = currentMillis;
+    return true;
+  }
+  return false;
 }
