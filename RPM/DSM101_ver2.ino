@@ -1,6 +1,6 @@
 /*
  * 6초에 한번 씩 미세먼지 측정을 하는 모듈
- * 따라서 6초에 들어오는 값을 50번 더하여 10을 나눈 값 출력
+ * 따라서 6초에 들어오는 값을 50번 더하여 50을 나눈 값 출력
  * 5분 마다 값 출력
  */
 
@@ -17,7 +17,7 @@ int parse_value_return();
 void Data_show();
 
 byte Data[24];
-int save = 0;       //10개 인지 확인용
+int save = 0;       //50개 인지 확인용
 int ByteSum[3];    //byte 합
 
 bool runEvery(unsigned long interval);
@@ -25,7 +25,7 @@ bool runEvery(unsigned long interval);
 void setup() {
   Serial.begin(19200);
   pms.begin(19200);
-  Serial.println("PM1 PM2.5 PM10");
+  //Serial.println("PM1 PM2.5 PM10");
   //초기 설정
   for(int i = 0 ; i < 3; i++){
     ByteSum[i] = 0;
@@ -33,12 +33,12 @@ void setup() {
 }
 
 void loop() {
-  if(runEvery(6000)){
+  if(runEvery(30000)){
    send_value_query();
    int result = parse_value_return();
-   Serial.println(save);
+   //Serial.println(save);
    if(save == 50){
-     Serial.println("come");
+     //Serial.println("come");
      Data_show();
      save = 0;
      for(int i = 0 ; i < 3; i++){
@@ -119,10 +119,10 @@ void Data_show(){
   Serial.println();
   */
 
-  Serial.print(ByteSum[0]/10);
+  Serial.print(ByteSum[0]/50);
   for(int i = 1; i < 3; i++){
     Serial.print(",");
-    Serial.print(ByteSum[i] / 10);
+    Serial.print(ByteSum[i] / 50);
   }
   Serial.println();
 }
