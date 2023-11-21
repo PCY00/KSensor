@@ -1,6 +1,7 @@
 import serial
 import requests
 from datetime import datetime
+import time
 
 port0 = '/dev/ttyACM1'
 port1 = '/dev/ttyACM0'
@@ -27,9 +28,12 @@ try:
     print('%s and %s and %s' %(ser2.name, ser0.name, ser1.name))
     
     # "start" 문자열을 각 시리얼 포트로 전송
-    ser0.write(b'start\n')
-    ser1.write(b'start\n')
-    ser2.write(b'start\n')
+    time.sleep(2)
+    send_s = 'start'
+    send_S = send_s.encode('utf-8')
+    ser0.write(send_S)
+    ser1.write(send_S)
+    ser2.write(send_S)
     
 except Exception as err:
     print("Serial err:", err)
