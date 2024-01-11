@@ -1,0 +1,11 @@
+|ATWNC1500|Mega2560|
+|------|---|
+|Vin|5V|
+|GND|GND|
+|SCK|D52|
+|MISO|D50|
+|MOSI|D51|
+|CS|D35|
+|EN|...(ATWNC1500 - Vin)|
+|IRQ|D37|
+|RST|D39|
