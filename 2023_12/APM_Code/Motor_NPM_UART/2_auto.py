@@ -50,8 +50,8 @@ def send_params(params):
         else:
             print(f"오류 발생: {response.status_code} - {response.text}")
 
-        # 5초 대기
-        time.sleep(5)
+        # 10초 대기
+        time.sleep(10)
 
 
 # 2시간 단위로 반복
