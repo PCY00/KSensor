@@ -3,7 +3,7 @@ import time
 from datetime import datetime, timedelta
 
 
-mobius_url = "http://114.71.220.59:7579/Mobius/Ksensor_ubicomp"  # Mobius 서버 주소와 요청 경로 설정
+mobius_url = 'http://114.71.220.59:7579/Mobius/Ksensor_ubicomp/motor'  # Mobius 서버 주소와 요청 경로 설정
 headers = {
   'Accept': 'application/json',
   'X-M2M-RI': '12345',
