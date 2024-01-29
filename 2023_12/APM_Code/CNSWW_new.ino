@@ -24,9 +24,11 @@ void setup(){
 }
 
 void loop(){
-
   //젯슨에서 값 받는거 대기
   while (!startReceived) {
+    if(runEvery(1000)){
+      WW();
+    }
   // start 신호 받기
     if (Serial.available() > 0) {
       String input = Serial.readStringUntil('\n');
@@ -34,10 +36,6 @@ void loop(){
         startReceived = true;
       }
     }
-  }
-
-  if(runEvery(1000)){
-      WW();
   }
   
   if (startReceived == true) {
@@ -86,8 +84,13 @@ void loop(){
 
     //0인 값 예외처리
     if (SS_count > 0) {
-      degree_F = degree_F / (float)SS_count;
-      wind_speed_print_F = wind_speed_print_F / SS_count;
+      if(wind_speed_print_F == 0 || degree_F == 0.0){
+        degree_F = 0.0;
+        wind_speed_print_F = 0;
+      }else{
+        degree_F = degree_F / (float)SS_count;
+        wind_speed_print_F = wind_speed_print_F / SS_count;
+      }
     } else {
       degree_F = -1.0;
       wind_speed_print_F = -1;
