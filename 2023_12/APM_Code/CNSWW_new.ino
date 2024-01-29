@@ -4,7 +4,7 @@ char CO_data[60];    //Hardware-designed co data archiving
 char NO2_data[60];    //Hardware-designed no2 data archiving
 char SO2_data[60];    //Hardware-designed so2 data archiving
 float direct[] = {3.84,1.98,2.25,0.41,0.45,0.32,0.90,0.62,1.40,1.19,3.08,2.93,4.62,4.04,4.33,3.43};
-int wind_speed_print_F = 0;
+float wind_speed_print_F = 0.0;
 float degree_F = 0.0;
 
 bool startReceived = false;
@@ -84,19 +84,19 @@ void loop(){
 
     //0인 값 예외처리
     if (SS_count > 0) {
-      if(wind_speed_print_F == 0){
-        wind_speed_print_F = 0;
+      if(wind_speed_print_F == 0.0){
+        wind_speed_print_F = 0.0;
       }
       if(degree_F == 0.0){
         degree_F = 0.0;
       }
-      if(wind_speed_print_F != 0 || degree_F != 0.0){
+      if(wind_speed_print_F != 0.0 && degree_F != 0.0){
         degree_F = degree_F / (float)SS_count;
-        wind_speed_print_F = wind_speed_print_F / SS_count;
+        wind_speed_print_F = wind_speed_print_F / (float)SS_count;
       }
     } else {
       degree_F = -1.0;
-      wind_speed_print_F = -1;
+      wind_speed_print_F = -1.0;
     }
 
     Serial.print(coPPM, 3);
@@ -110,7 +110,7 @@ void loop(){
     Serial.println(wind_speed_print_F);
     
     degree_F = 0.0;
-    wind_speed_print_F = 0;
+    wind_speed_print_F = 0.0;
     startReceived = false;
   }
 }
@@ -143,7 +143,7 @@ void WW(){
     }
   }
 
-  wind_speed_print_F += wind_speed_print;
+  wind_speed_print_F += (float)wind_speed_print;
   degree_F += degree;
   SS_count++;
 }
