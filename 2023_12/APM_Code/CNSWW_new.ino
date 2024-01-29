@@ -90,7 +90,7 @@ void loop(){
       if(degree_F == 0.0){
         degree_F = 0.0;
       }
-      if(wind_speed_print_F != 0 && degree_F != 0.0){
+      if(wind_speed_print_F != 0 || degree_F != 0.0){
         degree_F = degree_F / (float)SS_count;
         wind_speed_print_F = wind_speed_print_F / SS_count;
       }
