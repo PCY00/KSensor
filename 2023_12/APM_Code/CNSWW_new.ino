@@ -1,5 +1,3 @@
-
-
 char CO_data[60];    //Hardware-designed co data archiving
 char NO2_data[60];    //Hardware-designed no2 data archiving
 char SO2_data[60];    //Hardware-designed so2 data archiving
@@ -37,6 +35,7 @@ void loop(){
       }
     }
   }
+  
   
   if (startReceived == true) {
 
@@ -90,7 +89,7 @@ void loop(){
       if(degree_F == 0.0){
         degree_F = 0.0;
       }
-      if(wind_speed_print_F != 0.0 && degree_F != 0.0){
+      if(wind_speed_print_F != 0.0 || degree_F != 0.0){
         degree_F = degree_F / (float)SS_count;
         wind_speed_print_F = wind_speed_print_F / (float)SS_count;
       }
@@ -111,6 +110,7 @@ void loop(){
     
     degree_F = 0.0;
     wind_speed_print_F = 0.0;
+    SS_count = 0;
     startReceived = false;
   }
 }
@@ -130,7 +130,7 @@ float value_convert(String value){
 void WW(){
   int wind_speed_val = analogRead(A1);
   float wind_speed_outvoltage = wind_speed_val * (5.0 / 1023.0);
-  int wind_speed_print = 6 * wind_speed_outvoltage;
+  float wind_speed_print = 6.0 * wind_speed_outvoltage;
   
   int wind_direction_val = analogRead(A0);
   float wind_direction_outvoltage = wind_direction_val * 5 / 1023.0;
@@ -143,7 +143,7 @@ void WW(){
     }
   }
 
-  wind_speed_print_F += (float)wind_speed_print;
+  wind_speed_print_F += wind_speed_print;
   degree_F += degree;
   SS_count++;
 }
