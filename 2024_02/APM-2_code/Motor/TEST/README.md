@@ -1,1 +1,2 @@
-[!video](https://github.com/PCY00/KSensor/assets/46348321/395d9405-d747-4d5e-a2d7-fc4dcc38d590)
+[!video](https://github.com/PCY00/KSensor/assets/46348321/90020ea1-e910-4613-b9b4-8469f8488f1c)
+
