@@ -1,6 +1,7 @@
 ## Wiring
 
-![Wiring](https://github.com/PCY00/KSensor/assets/46348321/90539f8e-23e6-481d-a53e-1c59773e8bfc)
+![wiring](https://github.com/PCY00/KSensor/assets/46348321/99a8202e-577c-43a9-b2d6-247f7b426390)
+
 
 ---
 
