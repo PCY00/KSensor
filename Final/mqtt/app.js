@@ -149,7 +149,7 @@ function control_led(comm_num) {
     setTimeout(() => {
           console.log('Sending data');
           write(inputData);
-      }, 5000);
+      }, 3000);
   }
 }
 
