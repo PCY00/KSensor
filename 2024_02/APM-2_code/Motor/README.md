@@ -14,6 +14,6 @@
 ---
 
 # :hammer: Release
-24.02.09 Motor TEST
+24.02.09  ver1.0  Motor TEST
 <br>
-24.02.20 Creating Header Files for Motor
+24.02.20  ver1.1  Creating Header Files for Motor
