@@ -43,10 +43,13 @@ def send_(time):
         con0_1 = con0_1.replace("\n", "")
         print(con0_1)
         
-        data = "{\n    \"m2m:cin\": {\n        \"con\": \"" + con0_1 + "\"\n    }\n}"
+        mk_data = "{\n    \"m2m:cin\": {\n        \"con\": \"" + con0_1 + "\"\n    }\n}"
+        
+        #debug
+        print("debug_2: ", mk_data)
 
         try:
-            r = requests.request("POST", url+"/data", headers=headers, data=data)
+            r = requests.request("POST", url+"/data", headers=headers, data=mk_data)
             r.raise_for_status()
         except requests.exceptions.RequestException as req_err:
             print("Request error:", req_err)
@@ -60,30 +63,27 @@ previous_date = None
 try:
     while True:
         try:
-            r = requests.get(url, headers=headers, timeout=5)  # 연결 시간 초과를 10초로 설정
+            r = requests.get(url, headers=headers, timeout=5)
             r.raise_for_status()
             jr = r.json()
             
-            # 'm2m:cin'의 'con' 키에서 데이터를 가져옴
             data = jr["m2m:cin"]["con"]
             
-            # 데이터를 콤마로 분할하고 첫 번째 요소를 선택하여 날짜 부분만 가져옴
             date = data.split(',')[0]
             
-            # 이전 데이터와 새로운 데이터의 날짜가 다르면 새로운 데이터로 갱신하고 출력
             if date != previous_date:
-                #print("새로운 데이터 발견! 날짜:", date)
-                #start신호를 보낸다.
                 send_(date)
                 previous_date = date
+                #debug
+                print("debug_1: ", previous_date)
         except requests.exceptions.ConnectTimeout as e:
-            print("연결 시간 초과 오류가 발생했습니다:", e)
+            print("connected time error:", e)
         except requests.exceptions.RequestException as e:
-            print("요청 오류가 발생했습니다:", e)
+            print("request error:", e)
         
-        time.sleep(6)  # 6초마다 반복
+        time.sleep(6)
 
 except KeyboardInterrupt:
-    print("\n프로그램을 종료합니다.")
+    print("\nprogram error")
 except Exception as exc:
-    print("문제가 발생했습니다:", exc)
+    print("pro error", exc)
