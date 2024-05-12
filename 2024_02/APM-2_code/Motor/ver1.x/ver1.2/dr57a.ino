@@ -16,6 +16,5 @@ void setup(){
 }
 
 void loop(){
-  test_h.move_motor_angle();
-  test_h.revmotor();
+  test_h.move_motor_angle(true);
 }
