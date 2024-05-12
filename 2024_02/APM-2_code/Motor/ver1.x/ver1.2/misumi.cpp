@@ -6,8 +6,8 @@ misumi::misumi(int driverPUL, int driverDIR, long resolution) {
     this->driverDIR = driverDIR;
     this->PR = resolution;
 
-    this->preMillis = 0;
-    this->leftSteps = resolution;
+    this->preMicros = 0;
+    this->leftSteps = resolution * 2;
 
     this->setdir = HIGH;
 
@@ -15,9 +15,6 @@ misumi::misumi(int driverPUL, int driverDIR, long resolution) {
     pinMode(driverDIR, OUTPUT);
 
     digitalWrite(driverDIR, setdir);
-
-    Serial.println("start");
-    
 }
 
 
@@ -27,26 +24,36 @@ void misumi::setSpeed(int delaySpeed) {
 }
 
 void misumi::revmotor() {
-    this->leftSteps = this->PR;
+    this->leftSteps = this->PR * 2;
     setdir = !setdir;
     digitalWrite(driverDIR, setdir);
 }
 
-void misumi::move_motor_angle(){
-    unsigned long currentMillis = micros();
+void misumi::move_motor_angle(bool rev){
+    unsigned long currentMicros = micros();
 
-    if(currentMillis - this->preMillis >= this->delaySpeed){
-        this->preMillis = currentMillis;
-        Serial.println(preMillis);
-        if(this->leftSteps > 0){
-            this->leftSteps--;
-            move_moter(leftSteps % 2);
+    if(rev == false){
+        if(currentMicros - this->preMicros >= this->delaySpeed){
+            this->preMicros = currentMicros;
+            if(this->leftSteps > 0){
+                this->leftSteps--;
+                move_moter(leftSteps % 2);
+            }
+        }
+    }else {
+        if(currentMicros - this->preMicros >= this->delaySpeed){
+            this->preMicros = currentMicros;
+            if(this->leftSteps > 0){
+                this->leftSteps--;
+                move_moter(leftSteps % 2);
+            }else {
+              revmotor();
+            }
         }
     }
 }
 
 void misumi::move_moter(long steps){
-    Serial.println("come1");
     switch(steps){
         case 0:
             digitalWrite(driverPUL, HIGH);
@@ -56,12 +63,3 @@ void misumi::move_moter(long steps){
             break;
     }
 }
-/*
-void misumi::test_function(int PR) {
-    for (int i = 0; i < PR; i++) {
-        digitalWrite(driverPUL, HIGH);
-        delayMicroseconds(delaySpeed);
-        digitalWrite(driverPUL, LOW);
-        delayMicroseconds(delaySpeed);
-    }
-}*/
