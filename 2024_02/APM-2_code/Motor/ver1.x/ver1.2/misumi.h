@@ -1,5 +1,5 @@
 /*
-APM-2의 모터를 구동하기 위한 라이브러리 ver1.0
+APM-2의 모터를 구동하기 위한 라이브러리 ver1.2
 */
 
 #ifndef misumi_h
@@ -12,7 +12,7 @@ class misumi
 
         void setSpeed(int delaySpeed);
 
-        void move_motor_angle();
+        void move_motor_angle(bool rev);
         void move_moter(long steps);
         
         void revmotor();
@@ -36,7 +36,7 @@ class misumi
         long leftSteps;
 
         //pre millis
-        unsigned long preMillis;
+        unsigned long preMicros;
 
         //motor diraction
         bool setdir;
