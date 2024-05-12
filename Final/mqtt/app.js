@@ -26,7 +26,7 @@ var status = 0;
 //serialport setting
 const { SerialPort } = require('serialport');
 const { ReadlineParser } = require('@serialport/parser-readline');
-const port = new SerialPort({ path: '/dev/ttyACM3', baudRate: 9600 }); // Create the port object
+const port = new SerialPort({ path: '/dev/ttyACM4', baudRate: 9600 }); // Create the port object
 const parser = new ReadlineParser();
 port.pipe(parser);
 
@@ -112,9 +112,17 @@ function on_receive(data) {
                             }
                         }
 
-                        for (j = 0; j < download_arr.length; j++) {
+                        // for (j = 0; j < download_arr.length; j++) {
+                        //     if (download_arr[j].ctname == sink_obj.ctname) {
+                        //         g_down_buf = JSON.stringify({id: download_arr[i].id, con: sink_obj.con});
+                        //         console.log(g_down_buf + ' <----');
+                        //         control_led(sink_obj.con);
+                        //         break;
+                        //     }
+                        // }
+                        for (var j = 0; j < download_arr.length; j++) {
                             if (download_arr[j].ctname == sink_obj.ctname) {
-                                g_down_buf = JSON.stringify({id: download_arr[i].id, con: sink_obj.con});
+                                g_down_buf = JSON.stringify({id: download_arr[j].ctname, con: sink_obj.con});
                                 console.log(g_down_buf + ' <----');
                                 control_led(sink_obj.con);
                                 break;
@@ -130,7 +138,7 @@ function on_receive(data) {
 //here
 function control_led(comm_num) {
   const inputData = comm_num;
-  
+ 
   if(status === 1) {
     function write(data) {
       port.write(data, err => {
