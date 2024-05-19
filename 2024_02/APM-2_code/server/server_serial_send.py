@@ -9,17 +9,6 @@ apm_url = 'http://114.71.220.59:7579/Mobius/Ksensor_ubicomp'
 url_sejong = 'http://114.71.220.59:7579/Mobius/ubicomp_Ksensor/Sensor1/train'
 rpm_url = "http://211.226.18.66:5002/iot/v1/microdust/measure-last"
 
-#DDDOT
-port0 = '/dev/ttyACM1'
-#CNSWW
-port1 = '/dev/ttyACM0'
-#NBP1P2P3
-port2 = '/dev/ttyACM2'
-
-brate0 = 9600
-brate1 = 9600
-brate2 = 9600
-
 headers_apm = {
   'Accept': 'application/json',
   'X-M2M-RI': '12345',
@@ -33,6 +22,27 @@ headers_sejong = {
     'X-M2M-Origin': 'Ssch20191546',
     'Content-Type': 'application/vnd.onem2m-res+json; ty=4'
 }
+
+#DDDOT
+port0 = '/dev/ttyACM2'
+#CNSWW
+port1 = '/dev/ttyACM0'
+#NBP1P2P3
+port2 = '/dev/ttyACM3'
+
+##motor ttyACM1
+
+brate0 = 9600
+brate1 = 9600
+brate2 = 9600
+
+try:
+    ser0 = serial.Serial(port0, baudrate=brate0, timeout=None)
+    ser1 = serial.Serial(port1, baudrate=brate1, timeout=None)
+    ser2 = serial.Serial(port2, baudrate=brate2, timeout=None)
+    print('%s and %s and %s' %(ser2.name, ser0.name, ser1.name))
+except Exception as err:
+    print("Serial err:", err)
 
 # Global variables
 time_s, pm_data = None, None
@@ -58,23 +68,22 @@ def process_data():
             if item.get('deviceId') == '0017B2FFFE50087D':
                 meastime = item.get('meastime', '')
                 pm2_5_a = item.get('pm2.5_a', '')
-                print(f"meastime: {meastime}, pm2.5_a: {pm2_5_a}")
+                #print(f"meastime: {meastime}, pm2.5_a: {pm2_5_a}")
                 if meastime != last_sent_data or last_sent_data is None:
                     last_sent_data = meastime
                     time_s = meastime
                     pm_data = pm2_5_a
                 
+                send_s = 'start'
+                send_S = send_s.encode('utf-8')
+                ser0.write(send_S)
+                ser1.write(send_S)
+                ser2.write(send_S)
+                
+                time.sleep(2)
                 return time_s, pm_data
     else:
         print("No data received")
-
-try:
-    ser0 = serial.Serial(port0, baudrate=brate0, timeout=None)
-    ser1 = serial.Serial(port1, baudrate=brate1, timeout=None)
-    ser2 = serial.Serial(port2, baudrate=brate2, timeout=None)
-    print('%s and %s and %s' %(ser2.name, ser0.name, ser1.name))
-except Exception as err:
-    print("Serial err:", err)
     
 while True:
     time_s, pm_data = process_data()
