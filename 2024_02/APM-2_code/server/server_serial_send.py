@@ -65,7 +65,7 @@ def process_data():
         for item in data.get('data', []):
             if item.get('deviceId') == '0017B2FFFE50087D':
                 meastime = item.get('meastime', '')
-                print("meastime: ", meastime)
+                #print("meastime: ", meastime)
                 pm2_5_a = item.get('pm2.5_a', '')
                 if meastime != last_sent_data or last_sent_data is None:
                     last_sent_data = meastime
@@ -92,7 +92,7 @@ while True:
     url_sejong_uni = ""
     
     time_s, pm_data = process_data()
-    print("time_s: ", time_s)
+    #print("time_s: ", time_s)
     
     if ser0 and ser1 and ser2 and ser0.in_waiting and ser1.in_waiting and ser2.in_waiting:
         try:
@@ -111,7 +111,7 @@ while True:
             
         # Store angles and pm values
         bottom, pm1 = data_list[2], data_list[3]
-        print("bottom: ", data_list[2])
+        #print("bottom: ", data_list[2])
             
         if bottom == "0":
             if pm1 == "1":
@@ -153,13 +153,12 @@ while True:
         
         con0_1_sejong_str = json.dumps(con0_1_sejong_json)
         
-        data = "{\n    \"m2m:cin\": {\n        \"con\": \"" + con0_1 + "\"\n    }\n}"
+        data_apm = "{\n    \"m2m:cin\": {\n        \"con\": \"" + con0_1 + "\"\n    }\n}"
         data_sejong = "{\n    \"m2m:cin\": {\n        \"con\": \"" + con0_1_sejong_str + "\"\n    }\n}"
         
         try:
-            r = requests.post(url_sejong_uni, headers=headers_sejong, data=data_sejong)
-            r.raise_for_status()
-            jr = r.json()
+            r_apm = requests.post(apm_url, headers=headers_apm, data=data_apm)
+            r_sejong = requests.post(url_sejong_uni, headers=headers_sejong, data=data_sejong)
         except requests.exceptions.RequestException as req_err:
             print("Request error:", req_err)
         except requests.exceptions.HTTPError as http_err:
