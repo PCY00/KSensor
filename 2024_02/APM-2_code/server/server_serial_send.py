@@ -59,12 +59,13 @@ def fetch_data():
 
 def process_data():
     global last_sent_data, ser0, ser1, ser2
-    time_s, pm_data = None, None  # 초기화 추가
+    time_s, pm_data = None, None  #
     data = fetch_data()
     if data:
         for item in data.get('data', []):
             if item.get('deviceId') == '0017B2FFFE50087D':
                 meastime = item.get('meastime', '')
+                print("meastime: ", meastime)
                 pm2_5_a = item.get('pm2.5_a', '')
                 if meastime != last_sent_data or last_sent_data is None:
                     last_sent_data = meastime
@@ -88,7 +89,10 @@ def process_data():
     return time_s, pm_data  #
 
 while True:
+    url_sejong_uni = ""
+    
     time_s, pm_data = process_data()
+    print("time_s: ", time_s)
     
     if ser0 and ser1 and ser2 and ser0.in_waiting and ser1.in_waiting and ser2.in_waiting:
         try:
@@ -97,7 +101,8 @@ while True:
             contect1 = ser1.readline()
             
             con0_1 = "{},{},{},{}".format(time_s, contect2[:-2].decode(), contect0[:-2].decode(), contect1[:-2].decode())
-            
+            print(con0_1)
+
         except Exception as err:
             print("Serial read error:", err)
         
@@ -105,25 +110,39 @@ while True:
         data_list = con0_1.split(',')
             
         # Store angles and pm values
-        bottom, pm1, pm2, pm3 = data_list[2], data_list[3], data_list[4], data_list[5]
-	print("bottom: ", data_list[2])
+        bottom, pm1 = data_list[2], data_list[3]
+        print("bottom: ", data_list[2])
             
         if bottom == "0":
-            pm1_url = url_sejong + "/param1"
-            pm2_url = url_sejong + "/param2"
-            pm3_url = url_sejong + "/param3"
+            if pm1 == "1":
+                url_sejong_uni = url_sejong + "/param1"
+            elif pm1 == "2":
+                url_sejong_uni = url_sejong + "/param2"
+            elif pm1 == "3":
+                url_sejong_uni = url_sejong + "/param3"
         elif bottom == "30":
-            pm1_url = url_sejong + "/param4"
-            pm2_url = url_sejong + "/param5"
-            pm3_url = url_sejong + "/param6"
+            if pm1 == "1":
+                url_sejong_uni = url_sejong + "/param4"
+            elif pm1 == "2":
+                url_sejong_uni = url_sejong + "/param5"
+            elif pm1 == "3":
+                url_sejong_uni = url_sejong + "/param6"
         elif bottom == "60":
-            pm1_url = url_sejong + "/param7"
-            pm2_url = url_sejong + "/param8"
-            pm3_url = url_sejong + "/param9"
+            if pm1 == "1":
+                url_sejong_uni = url_sejong + "/param7"
+            elif pm1 == "2":
+                url_sejong_uni = url_sejong + "/param8"
+            elif pm1 == "3":
+                url_sejong_uni = url_sejong + "/param9"
         elif bottom == "90":
-            pm1_url = url_sejong + "/param10"
-            pm2_url = url_sejong + "/param11"
-            pm3_url = url_sejong + "/param12"
+            if pm1 == "1":
+                url_sejong_uni = url_sejong + "/param10"
+            elif pm1 == "2":
+                url_sejong_uni = url_sejong + "/param11"
+            elif pm1 == "3":
+                url_sejong_uni = url_sejong + "/param12"
+                
+        print("url_sejong_uni: ", url_sejong_uni)
             
         new_data_list = data_list[:2] + data_list[6:]
 
@@ -138,7 +157,7 @@ while True:
         data_sejong = "{\n    \"m2m:cin\": {\n        \"con\": \"" + con0_1_sejong_str + "\"\n    }\n}"
         
         try:
-            r = requests.post(url_sejong, headers=headers_sejong, data=data_sejong)
+            r = requests.post(url_sejong_uni, headers=headers_sejong, data=data_sejong)
             r.raise_for_status()
             jr = r.json()
         except requests.exceptions.RequestException as req_err:
