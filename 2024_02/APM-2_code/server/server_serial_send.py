@@ -67,9 +67,6 @@ def process_data():
                 return time_s, pm_data
     else:
         print("No data received")
-        
-# Initial execution
-time_s, pm_data = process_data()
 
 try:
     ser0 = serial.Serial(port0, baudrate=brate0, timeout=None)
@@ -80,6 +77,8 @@ except Exception as err:
     print("Serial err:", err)
     
 while True:
+    time_s, pm_data = process_data()
+    
     if ser0.in_waiting != 0 and ser1.in_waiting != 0 and ser2.in_waiting != 0:
         try:
             contect2 = ser2.readline()
@@ -92,7 +91,7 @@ while True:
         except Exception as err:
             print("Serial read err:", err)
         
-        con0_1 = con0_1.replace("\n", "")
+        con0_1 = con0_1.replace("\n","")
         data_list = con0_1.split(',')
             
         #각도 저장
@@ -138,3 +137,5 @@ while True:
             print("HTTP error:", http_err)
         except Exception as exc:
             print('There was a problem: %s' % (exc))
+    
+    time.sleep(55)
