@@ -3,6 +3,7 @@ import requests
 import json
 import time
 from serial import Serial
+from collections import OrderedDict
 
 apm_url = 'http://114.71.220.59:7579/Mobius/Ksensor_ubicomp/data'
 url_sejong = 'http://114.71.220.59:7579/Mobius/ubicomp_Ksensor/Sensor1/train'
@@ -42,8 +43,8 @@ except Exception as err:
     print("Serial error:", err)
 
 # Global variables
-time_s, pm_data = None, None
-last_sent_data = None
+time_s, pm_data = "", ""
+last_sent_data, pm_data_save = "", ""
 
 def fetch_data():
     try:
@@ -58,18 +59,18 @@ def fetch_data():
         return None
 
 def process_data():
-    global last_sent_data, ser0, ser1, ser2
-    time_s, pm_data = None, None
+    global last_sent_data, pm_data_save, ser0, ser1, ser2, time_s, pm_data
     data = fetch_data()
     if data:
         for item in data.get('data', []):
             if item.get('deviceId') == '0017B2FFFE50087D':
                 meastime = item.get('meastime', '')
                 pm2_5_a = item.get('pm2.5_a', '')
-                if meastime != last_sent_data or last_sent_data is None:
+                if meastime != last_sent_data or not last_sent_data:
                     last_sent_data = meastime
                     time_s = meastime
-                    pm_data = pm2_5_a
+                    pm_data_save = pm2_5_a
+                    pm_data = pm_data_save
                 
                 send_s = 'start'
                 send_S = send_s.encode('utf-8')
@@ -94,15 +95,16 @@ while True:
     
     if ser0 and ser1 and ser2 and ser0.in_waiting and ser1.in_waiting and ser2.in_waiting:
         try:
-            contect2 = ser2.readline()
-            contect0 = ser0.readline()
-            contect1 = ser1.readline()
+            contect2 = ser2.readline().decode().strip()
+            contect0 = ser0.readline().decode().strip()
+            contect1 = ser1.readline().decode().strip()
             
-            con0_1 = "{},{},{},{}".format(time_s, contect2[:-2].decode(), contect0[:-2].decode(), contect1[:-2].decode())
+            con0_1 = "{},{},{},{}".format(time_s, contect2, contect0, contect1)
             print(con0_1)
 
         except Exception as err:
             print("Serial read error:", err)
+            continue
         
         con0_1 = con0_1.replace("\n", "")
         data_list = con0_1.split(',')
@@ -147,17 +149,24 @@ while True:
             except ValueError:
                 new_data_list.append(item)
 
-        con0_1_sejong_json = {
-            "con": {
-                "label": pm_data,
-                "data": new_data_list
-            }
-        }
-        
+        con0_1_sejong_json = OrderedDict([
+            ("label", float(pm_data)),
+            ("data", new_data_list)
+        ])
         con0_1_sejong_str = json.dumps(con0_1_sejong_json)
+        # print(con0_1_sejong_str)
         
-        data_apm = "{\n    \"m2m:cin\": {\n        \"con\": \"" + con0_1 + "\"\n    }\n}"
-        data_sejong = "{\n    \"m2m:cin\": {\n        \"con\": \"" + con0_1_sejong_str + "\"\n    }\n}"
+        data_apm = json.dumps({
+            "m2m:cin": {
+                "con": con0_1
+            }
+        })
+        data_sejong = json.dumps({
+            "m2m:cin": {
+                "con": con0_1_sejong_str
+            }
+        })
+        # print(data_sejong)
         
         try:
             r_apm = requests.post(apm_url, headers=headers_apm, data=data_apm)
