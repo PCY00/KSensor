@@ -4,7 +4,7 @@ import json
 import time
 from serial import Serial
 
-apm_url = 'http://114.71.220.59:7579/Mobius/Ksensor_ubicomp'
+apm_url = 'http://114.71.220.59:7579/Mobius/Ksensor_ubicomp/data'
 url_sejong = 'http://114.71.220.59:7579/Mobius/ubicomp_Ksensor/Sensor1/train'
 rpm_url = "http://211.226.18.66:5002/iot/v1/microdust/measure-last"
 
@@ -59,13 +59,12 @@ def fetch_data():
 
 def process_data():
     global last_sent_data, ser0, ser1, ser2
-    time_s, pm_data = None, None  #
+    time_s, pm_data = None, None
     data = fetch_data()
     if data:
         for item in data.get('data', []):
             if item.get('deviceId') == '0017B2FFFE50087D':
                 meastime = item.get('meastime', '')
-                #print("meastime: ", meastime)
                 pm2_5_a = item.get('pm2.5_a', '')
                 if meastime != last_sent_data or last_sent_data is None:
                     last_sent_data = meastime
@@ -86,13 +85,12 @@ def process_data():
                 return time_s, pm_data
     else:
         print("No data received")
-    return time_s, pm_data  #
+    return time_s, pm_data
 
 while True:
     url_sejong_uni = ""
     
     time_s, pm_data = process_data()
-    #print("time_s: ", time_s)
     
     if ser0 and ser1 and ser2 and ser0.in_waiting and ser1.in_waiting and ser2.in_waiting:
         try:
@@ -109,9 +107,7 @@ while True:
         con0_1 = con0_1.replace("\n", "")
         data_list = con0_1.split(',')
             
-        # Store angles and pm values
         bottom, pm1 = data_list[2], data_list[3]
-        #print("bottom: ", data_list[2])
             
         if bottom == "0":
             if pm1 == "1":
@@ -142,13 +138,20 @@ while True:
             elif pm1 == "3":
                 url_sejong_uni = url_sejong + "/param12"
                 
-        print("url_sejong_uni: ", url_sejong_uni)
+        print(url_sejong_uni)
             
-        new_data_list = data_list[:2] + data_list[6:]
+        new_data_list = []
+        for item in data_list[:2] + data_list[6:]:
+            try:
+                new_data_list.append(float(item))
+            except ValueError:
+                new_data_list.append(item)
 
         con0_1_sejong_json = {
-            "label": pm_data,
-            "data": new_data_list
+            "con": {
+                "label": pm_data,
+                "data": new_data_list
+            }
         }
         
         con0_1_sejong_str = json.dumps(con0_1_sejong_json)
@@ -158,12 +161,22 @@ while True:
         
         try:
             r_apm = requests.post(apm_url, headers=headers_apm, data=data_apm)
-            r_sejong = requests.post(url_sejong_uni, headers=headers_sejong, data=data_sejong)
+            r_apm.raise_for_status()
         except requests.exceptions.RequestException as req_err:
-            print("Request error:", req_err)
+            print("APM Request error:", req_err)
         except requests.exceptions.HTTPError as http_err:
-            print("HTTP error:", http_err)
+            print("APM HTTP error:", http_err)
         except Exception as exc:
-            print('There was a problem: {}'.format(exc))
+            print('APM There was a problem: {}'.format(exc))
+        
+        try:
+            r_sejong = requests.post(url_sejong_uni, headers=headers_sejong, data=data_sejong)
+            r_sejong.raise_for_status()
+        except requests.exceptions.RequestException as req_err:
+            print("Sejong Request error:", req_err)
+        except requests.exceptions.HTTPError as http_err:
+            print("Sejong HTTP error:", http_err)
+        except Exception as exc:
+            print('Sejong There was a problem: {}'.format(exc))
     
     time.sleep(55)
