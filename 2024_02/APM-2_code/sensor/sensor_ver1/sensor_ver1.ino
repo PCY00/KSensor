@@ -158,6 +158,12 @@ void loop() {
     temp = DHT.getTemperature();
     float Ozone_ppm = (float)ozoneConcentration / 1000;
 
+    Serial.print(temp);
+    Serial.print(",");
+    Serial.print(humi);
+    Serial.print(",");
+    Serial.println(Ozone_ppm, 3);
+    Serial.print(",");
     Serial.print(coPPM, 3);
     Serial.print(",");
     Serial.print(no2PPM, 3);
@@ -167,12 +173,6 @@ void loop() {
     Serial.print(degree_F);
     Serial.print(",");
     Serial.print(wind_speed_print_F);
-    Serial.print(",");
-    Serial.print(temp);
-    Serial.print(",");
-    Serial.print(humi);
-    Serial.print(",");
-    Serial.println(Ozone_ppm, 3);
     
     degree_F = 0.0;
     wind_speed_print_F = 0.0;
