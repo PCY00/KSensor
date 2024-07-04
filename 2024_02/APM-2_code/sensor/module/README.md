@@ -24,3 +24,12 @@ P앞에 숫자는 그 컨테이너의 모듈 넘버입니다.
 #define Speed_2 55
 #define Speed_3 70
 ```
+
+---
+
+### Value extraction
+- 시리얼에 다음을 입력하면 값이 추출됩니다.
+
+```
+start
+```
