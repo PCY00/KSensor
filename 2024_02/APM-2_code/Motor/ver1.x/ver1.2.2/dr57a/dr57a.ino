@@ -19,7 +19,7 @@ String model_3= "0";
 String con_data = "0,0,0";
 
 void setup(){
-  Serial.begin(57600);
+  Serial.begin(9600);
   test_h.setSpeed(5000);
 }
 
@@ -33,18 +33,20 @@ void loop(){
       model_1 = String(num);
       con_data = model_1;
       test_1.set_angle((long)num);
-      Serial.println(con_data);
+      //Serial.println(con_data);
     }else if (receivedString.startsWith("bottom2")) {
       int num = receivedString.substring(8).toInt(); // 문자열에서 숫자 부분 추출
       model_2 = String(num);
       con_data = model_2;
       test_2.set_angle((long)num);
-      Serial.println(con_data);
+      //Serial.println(con_data);
     }else if (receivedString.startsWith("bottom3")) {
       int num = receivedString.substring(8).toInt(); // 문자열에서 숫자 부분 추출
       model_3 = String(num);
       con_data = model_3;
       test_3.set_angle((long)num);
+      //Serial.println(con_data);
+    }else if(receivedString == "start"){
       Serial.println(con_data);
     }
 
