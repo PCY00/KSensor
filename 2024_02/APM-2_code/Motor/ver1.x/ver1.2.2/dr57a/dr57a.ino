@@ -16,7 +16,7 @@ misumi test_3(10,11,RESOLUTION_400);
 String model_1 = "0";
 String model_2= "0";
 String model_3= "0";
-String con_data = "";
+String con_data = "0,0,0";
 
 void setup(){
   Serial.begin(57600);
@@ -47,6 +47,8 @@ void loop(){
       test_3.set_angle((long)num);
       Serial.println(con_data);
     }
+
+    con_data = model_1 + "," + model_2 + "," + model_3
   }
   test_1.move_motor_angle();
   test_2.move_motor_angle();
