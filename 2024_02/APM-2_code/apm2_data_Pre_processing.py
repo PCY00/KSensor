@@ -159,8 +159,8 @@ while True:
         })
         
         try:
-            r_apm = requests.post(apm_url, headers=headers_apm, data=data_apm)
-            r_apm.raise_for_status()
+            r_apm2 = requests.post(apm2_url, headers=apm2_headers, data=data_apm)
+            r_apm2.raise_for_status()
         except requests.exceptions.RequestException as req_err:
             print("APM Request error:", req_err)
         except requests.exceptions.HTTPError as http_err:
