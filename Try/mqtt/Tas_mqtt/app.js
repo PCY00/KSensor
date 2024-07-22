@@ -21,6 +21,31 @@ var download_arr = [];
 
 var conf = {};
 
+var status = 0;
+
+//serialport setting
+const { SerialPort } = require('serialport');
+const { ReadlineParser } = require('@serialport/parser-readline');
+
+const ports = [
+    new SerialPort({ path: '/dev/ttyACM4', baudRate: 9600 }), 
+    new SerialPort({ path: '/dev/ttyACM5', baudRate: 9600 }),
+    new SerialPort({ path: '/dev/ttyACM6', baudRate: 9600 })
+];
+const parsers = ports.map(port => new ReadlineParser());
+
+ports.forEach((port, index) => {
+    port.pipe(parsers[index]);
+
+    port.on('open', () => {
+        console.log(`Serial port ${index} opened`);
+        if (index === 0) status = 1;
+    });
+
+    parsers[index].on('data', data => {
+        console.log(`Got word from Arduino ${index}:`, data);
+    });
+});
 
 // This is an async file read
 fs.readFile('conf.xml', 'utf-8', function (err, data) {
@@ -97,9 +122,9 @@ function on_receive(data) {
                             }
                         }
 
-                        for (j = 0; j < download_arr.length; j++) {
+                        for (var j = 0; j < download_arr.length; j++) {
                             if (download_arr[j].ctname == sink_obj.ctname) {
-                                g_down_buf = JSON.stringify({id: download_arr[i].id, con: sink_obj.con});
+                                g_down_buf = JSON.stringify({id: download_arr[j].ctname, con: sink_obj.con});
                                 console.log(g_down_buf + ' <----');
                                 control_led(sink_obj.con);
                                 break;
@@ -113,11 +138,25 @@ function on_receive(data) {
 }
 
 function control_led(comm_num) {
-      
-      var parent_process = cp.fork("m.js", [comm_num]);	
-      parent_process.on('close', function (code) {
-        // console.log('Child process is exiting with exit code: ' + code);
-      });
+    const inputData = comm_num;
+
+    if (status === 1) {
+        function write(data) {
+            ports.forEach((port, index) => {
+                port.write(data, err => {
+                    if (err) {
+                        return console.log(`Error on write to port ${index}: `, err.message);
+                    }
+                    console.log(`Message written to port ${index}`);
+                });
+            });
+        }
+
+        setTimeout(() => {
+            console.log('Sending data');
+            write(inputData);
+        }, 3000);
+    }
 }
 
 function tas_watchdog() {
@@ -145,7 +184,7 @@ function tas_watchdog() {
     else if (tas_state == 'init_thing') {
         // init things
         control_led('0');
-        
+
         tas_state = 'connect';
     }
     else if (tas_state == 'connect' || tas_state == 'reconnect') {
