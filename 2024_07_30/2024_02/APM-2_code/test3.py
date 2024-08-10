@@ -80,16 +80,11 @@ def handle_client(conn, addr):
                 break
             data = data.decode('utf-8').strip()
 
-            # 데이터가 'M'으로 시작할 경우, RPM URL로 전송
-            if data.startswith('M'):
-                print(f"Received RPM data: {data}")
-                send_apm_data(data, rpm_save_url)
-            else:
+            if data == "start":
                 for ser in serial_connections:
                     ser.write(data.encode('utf-8'))
                 time.sleep(5)
 
-            if data == "start":
                 while running:
                     con0_1 = read_serial_data()
                     if "error" in con0_1:
@@ -123,7 +118,6 @@ def handle_client(conn, addr):
                             "no2", "so2", "wind_d", "wind_s"
                         ]
 
-                        # 데이터 길이가 맞지 않으면 재시도
                         if len(data_list) != len(original_order):
                             print("Data length mismatch: Retrying.")
                             for ser in serial_connections:
@@ -139,6 +133,16 @@ def handle_client(conn, addr):
                         print(f"Reordered data: {combined_data}")
                         send_apm_data(combined_data, apm2_url)
                         break
+
+            elif data.startswith('M'):
+                # 데이터 'M'으로 시작하는 경우
+                for ser in serial_connections:
+                    ser.write(data.encode('utf-8'))
+                time.sleep(5)
+
+                rpm_data = read_serial_data()
+                print(f"Received RPM data: {rpm_data}")
+                send_apm_data(rpm_data, rpm_save_url)
 
             conn.sendall(data.encode('utf-8'))
 
