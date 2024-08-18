@@ -133,103 +133,95 @@ def process_data(data):
 
     with lock:  # 임계영역 시작
         if data.startswith('M'):
-            clear_serial_buffer()
-            if data[1] == '1':
-                ser0.write(data.encode('utf-8'))
-                time.sleep(10)
-                if ser0.in_waiting > 0:
-                   FanSpeed_data = ser0.readline().decode('utf-8').strip()
-                else:
-                   FanSpeed_data = ""
+            if is_restoring_fan_state:
+                # 복원 중일 때 데이터를 쓰기만 하고, 읽기는 생략
+                if data[1] == '1':
+                    ser0.write(data.encode('utf-8'))
+                elif data[1] == '2':
+                    ser1.write(data.encode('utf-8'))
+                elif data[1] == '3':
+                    ser2.write(data.encode('utf-8'))
+                print(f"Data written during restore: {data}")
+                clear_serial_buffer()
+            else:
+                clear_serial_buffer()
+                if data[1] == '1':
+                    ser0.write(data.encode('utf-8'))
+                    time.sleep(10)
+                    FanSpeed_data = ser0.readline().decode('utf-8').strip() if ser0.in_waiting > 0 else ""
+                elif data[1] == '2':
+                    ser1.write(data.encode('utf-8'))
+                    time.sleep(10)
+                    FanSpeed_data = ser1.readline().decode('utf-8').strip() if ser1.in_waiting > 0 else ""
+                elif data[1] == '3':
+                    ser2.write(data.encode('utf-8'))
+                    time.sleep(10)
+                    FanSpeed_data = ser2.readline().decode('utf-8').strip() if ser2.in_waiting > 0 else ""
 
-            elif data[1] == '2':
-                ser1.write(data.encode('utf-8'))
-                time.sleep(10)
-                if ser1.in_waiting > 0:
-                   FanSpeed_data = ser1.readline().decode('utf-8').strip()
-                else:
-                   FanSpeed_data = ""
-                   
-            elif data[1] == '3':
-                ser2.write(data.encode('utf-8'))
-                time.sleep(10)
-                if ser2.in_waiting > 0:
-                   FanSpeed_data = ser2.readline().decode('utf-8').strip()
-                else:
-                   FanSpeed_data = ""
-
-            print(f"Received Fanspeed data: {FanSpeed_data}")
-            send_apm_data(FanSpeed_data, FanSpeed_url)
+                print(f"Received Fanspeed data: {FanSpeed_data}")
+                send_apm_data(FanSpeed_data, FanSpeed_url)
 
         elif data.startswith('2'):
-            rpm_data_list = data.split(',')
-            time_s, pm_data, pm_data_a = rpm_data_list[0], rpm_data_list[5], rpm_data_list[6]
-        
-            print(f"Data starts with '2': {time_s},{pm_data},{pm_data_a}\n")
-            clear_serial_buffer()
-            print(f"sending start")
-            ser0.write(b'start')
-            ser1.write(b'start')
-            ser2.write(b'start')
-            ser3.write(b'start')
-            ser4.write(b'start')
-            time.sleep(5)
-        
-            con0_1 = read_serial_data()
-            if "error" in con0_1:
+            retry = True
+            while retry:
+                retry = False
+                rpm_data_list = data.split(',')
+                time_s, pm_data, pm_data_a = rpm_data_list[0], rpm_data_list[5], rpm_data_list[6]
+            
+                print(f"Data starts with '2': {time_s},{pm_data},{pm_data_a}\n")
                 clear_serial_buffer()
-                print("Error detected, resending 'start' signal")
-                ser0.write("start".encode('utf-8'))
-                ser1.write("start".encode('utf-8'))
-                ser2.write("start".encode('utf-8'))
-                ser3.write("start".encode('utf-8'))
-                ser4.write("start".encode('utf-8'))
+                print(f"sending start")
+                ser0.write(b'start')
+                ser1.write(b'start')
+                ser2.write(b'start')
+                ser3.write(b'start')
+                ser4.write(b'start')
                 time.sleep(5)
-            else:
-                if time_s and pm_data and pm_data_a:
-                    combined_data = "{},{},{},{}".format(time_s, con0_1, pm_data, pm_data_a)
-                    print(f"{combined_data}")
-
-                    data_list = combined_data.split(',')
-                    original_order = [
-                        "datetime", "pwm1_1", "pwm1_2", "pwm1_3", "pm1_1", "pm1_2", "pm1_3",
-                        "pwm2_1", "pwm2_2", "pwm2_3", "pm2_1", "pm2_2", "pm2_3",
-                        "pwm3_1", "pwm3_2", "pwm3_3", "pm3_1", "pm3_2", "pm3_3",
-                        "temp", "humi", "o3", "co", "no2", "so2",
-                        "wind_d", "wind_s", "npm", "rpm before correction", "rpm after correction"
-                    ]
-                    desired_order = [
-                        "datetime", "rpm before correction", "rpm after correction",
-                        "pwm1_1", "pwm1_2", "pwm1_3",
-                        "pwm2_1", "pwm2_2", "pwm2_3",
-                        "pwm3_1", "pwm3_2", "pwm3_3",
-                        "npm",
-                        "pm1_1", "pm1_2", "pm1_3",
-                        "pm2_1", "pm2_2", "pm2_3",
-                        "pm3_1", "pm3_2", "pm3_3",
-                        "temp", "humi", "o3", "co",
-                        "no2", "so2", "wind_d", "wind_s"
-                    ]
-
-                    if len(data_list) != len(original_order):
-                        clear_serial_buffer()
-                        print("Data length mismatch: Retrying.")
-                        ser0.write("start".encode('utf-8'))
-                        ser1.write("start".encode('utf-8'))
-                        ser2.write("start".encode('utf-8'))
-                        ser3.write("start".encode('utf-8'))
-                        ser4.write("start".encode('utf-8'))
-                        time.sleep(5)
-
-                    index_map = {original_order[i]: i for i in range(len(original_order))}
-                    reordered_data = [data_list[index_map[col]] for col in desired_order]
-
-                    combined_data = ','.join(reordered_data)
-
-                    print(f"Reordered data: {combined_data}")
-                    send_apm_data(combined_data, apm2_url)
+            
+                con0_1 = read_serial_data()
+                if "error" in con0_1:
+                    clear_serial_buffer()
+                    print("Error detected, resending 'start' signal")
+                    retry = True
                 else:
-                    print("Global variables are not yet initialized.")        
+                    if time_s and pm_data and pm_data_a:
+                        combined_data = "{},{},{},{}".format(time_s, con0_1, pm_data, pm_data_a)
+                        print(f"{combined_data}")
+
+                        data_list = combined_data.split(',')
+                        original_order = [
+                            "datetime", "pwm1_1", "pwm1_2", "pwm1_3", "pm1_1", "pm1_2", "pm1_3",
+                            "pwm2_1", "pwm2_2", "pwm2_3", "pm2_1", "pm2_2", "pm2_3",
+                            "pwm3_1", "pwm3_2", "pwm3_3", "pm3_1", "pm3_2", "pm3_3",
+                            "temp", "humi", "o3", "co", "no2", "so2",
+                            "wind_d", "wind_s", "npm", "rpm before correction", "rpm after correction"
+                        ]
+                        desired_order = [
+                            "datetime", "rpm before correction", "rpm after correction",
+                            "pwm1_1", "pwm1_2", "pwm1_3",
+                            "pwm2_1", "pwm2_2", "pwm2_3",
+                            "pwm3_1", "pwm3_2", "pwm3_3",
+                            "npm",
+                            "pm1_1", "pm1_2", "pm1_3",
+                            "pm2_1", "pm2_2", "pm2_3",
+                            "pm3_1", "pm3_2", "pm3_3",
+                            "temp", "humi", "o3", "co",
+                            "no2", "so2", "wind_d", "wind_s"
+                        ]
+
+                        if len(data_list) != len(original_order):
+                            clear_serial_buffer()
+                            print("Data length mismatch: Retrying.")
+                            retry = True
+                        else:
+                            index_map = {original_order[i]: i for i in range(len(original_order))}
+                            reordered_data = [data_list[index_map[col]] for col in desired_order]
+                            combined_data = ','.join(reordered_data)
+                            print(f"Reordered data: {combined_data}")
+                            send_apm_data(combined_data, apm2_url)
+                    else:
+                        print("Global variables are not yet initialized.")  
+     
 
 def server():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
