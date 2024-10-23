@@ -415,6 +415,8 @@ def server():
         s.bind(('localhost', port))
         s.listen()
         print(f"Listening on port {port}...")
+        
+        retry = True
 
         while retry:
             try:       
