@@ -405,6 +405,9 @@ def OneMinute(url):
         send_sejong_data_two(combined_data, sejong_url_module)
     
     lock.release()
+    
+#60초마다 데이터를 전송하기 위한 스케줄러 (람다를 써야 함수에 인자를 넣을 수 있음, 함수의 결과값을 넣을 수 없음)., 스케줄러 등록
+schedule.every(60).seconds.do(lambda: OneMinute(rpm_url + '/la'))
 
 # TCP통신 함수
 def server():
@@ -429,8 +432,7 @@ def server():
                         if data.startswith('M'):
                             CommandFanControl(data)
                             
-                        #60초마다 데이터를 전송하기 위한 스케줄러 (람다를 써야 함수에 인자를 넣을 수 있음, 함수의 결과값을 넣을 수 없음)
-                        schedule.every(60).seconds.do(lambda: OneMinute(rpm_url + '/la'))
+                        schedule.run_pending()
             except Exception as server_err:
                 print(f"Server error: {server_err}")
                 retry = False
