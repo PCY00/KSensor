@@ -204,25 +204,25 @@ def send_sejong_data(data, url):
             new_data_list.append(item)
             
     con0_1_sejong_json = OrderedDict([
-        ("label", float(where_list[2])),
+        ("label", float(where_list[3])),
         ("data", new_data_list)
     ])
     con0_1_sejong_str = json.dumps(con0_1_sejong_json)
     
     
-    if where_list[3] == '900':
+    if where_list[4] == '900':
         new_url = url + "/param1"
-    elif where_list[3] == '1200':
+    elif where_list[4] == '1200':
         new_url = url + "/param2"
-    elif where_list[3] == '1650':
+    elif where_list[4] == '1650':
         new_url = url + "/param3"
-    elif where_list[3] == '2100':
+    elif where_list[4] == '2100':
         new_url = url + "/param4"
-    elif where_list[3] == '2550':
+    elif where_list[4] == '2550':
         new_url = url + "/param5"        
-    elif where_list[3] == '3060':
+    elif where_list[4] == '3060':
         new_url = url + "/param6"
-    elif where_list[3] == '3420':
+    elif where_list[4] == '3420':
         new_url = url + "/param7"
     else:
         print("fanSpeed selection error")
@@ -327,50 +327,43 @@ def CommandFanControl(data):
     
 def OneMinute(url):
     global RPM_pm_data_b, RPM_pm_data_a, RPM_time
-    
+
+    print("Acquiring lock")
     lock.acquire()
-    #APM2 시간 수집
-    APM2_time = datetime.now().strftime('%Y%m%d%H%M%S')
     
-    #RPM 데이터 수집
-    rpm_data_get = requests.get(url, headers = apm2_headers)
-        
     try:
+        # APM2 시간 수집
+        APM2_time = datetime.now().strftime('%Y%m%d%H%M%S')
+        
+        # RPM 데이터 수집
+        print("Fetching RPM data")
+        rpm_data_get = requests.get(url, headers=apm2_headers)
         rpm_data_get.raise_for_status()
         rpm_data_get_json = rpm_data_get.json()
         rpm_data_original = rpm_data_get_json.get("m2m:cin", {}).get("con", None)
-    except Exception as exc:
-        print(f"There was a problem: {exc}")
-        rpm_data_original = None
+        print(f"RPM data fetched: {rpm_data_original}")
 
-    # RPM 데이터 처리
-    if rpm_data_original:
-        rpm_data_original_list = rpm_data_original.split(',')
-        RPM_time = rpm_data_original_list[0] if len(rpm_data_original_list) > 0 else 'null'
-        RPM_pm_data_b = rpm_data_original_list[5] if len(rpm_data_original_list) > 5 else 'null'
-        RPM_pm_data_a = rpm_data_original_list[6] if len(rpm_data_original_list) > 6 else 'null'
-    else:
-        RPM_time = 'null'
-        RPM_pm_data_b = 'null'
-        RPM_pm_data_a = 'null'
-        
-        #APM2 데이터 수집
+        # RPM 데이터 처리
+        if rpm_data_original:
+            rpm_data_original_list = rpm_data_original.split(',')
+            RPM_time = rpm_data_original_list[0] if len(rpm_data_original_list) > 0 else 'null'
+            RPM_pm_data_b = rpm_data_original_list[5] if len(rpm_data_original_list) > 5 else 'null'
+            RPM_pm_data_a = rpm_data_original_list[6] if len(rpm_data_original_list) > 6 else 'null'
+        else:
+            RPM_time = RPM_pm_data_b = RPM_pm_data_a = 'null'
+
+    # APM2 데이터 수집 및 전송
         clear_serial_buffer()
-        print(f"sending start")
-        ser0.write(b'start')
-        ser1.write(b'start')
-        ser2.write(b'start')
-        ser3.write(b'start')
-        ser4.write(b'start')
+        print("Sending start command to serial ports")
+        for ser in [ser0, ser1, ser2, ser3, ser4]:
+            ser.write(b'start')
         time.sleep(5)
         
         APM2_Data = read_serial_data()
-        combined_data = "{},{},{},{}".format(APM2_time, RPM_time, APM2_Data, RPM_pm_data_b, RPM_pm_data_a)
-        print(f"{combined_data}")
-
-        data_list = combined_data.split(',')
+        combined_data = f"{APM2_time},{RPM_time},{APM2_Data},{RPM_pm_data_b},{RPM_pm_data_a}"
+        print(f"Combined data: {combined_data}")
         
-        #데이터 재정렬
+        # 데이터 재정렬
         original_order = [
             "APM_datetime", "RPM_datetime", "pwm1_1", "pwm1_2", "pwm1_3", "pm1_1", "pm1_2", "pm1_3",
             "pwm2_1", "pwm2_2", "pwm2_3", "pm2_1", "pm2_2", "pm2_3",
@@ -380,64 +373,63 @@ def OneMinute(url):
         ]
         desired_order = [
             "APM_datetime", "RPM_datetime", "rpm before correction", "rpm after correction",
-            "pwm1_1", "pwm1_2", "pwm1_3",
-            "pwm2_1", "pwm2_2", "pwm2_3",
-            "pwm3_1", "pwm3_2", "pwm3_3",
-            "npm",
-            "pm1_1", "pm1_2", "pm1_3",
-            "pm2_1", "pm2_2", "pm2_3",
-            "pm3_1", "pm3_2", "pm3_3",
-            "temp", "humi", "o3", "co",
-            "no2", "so2", "wind_d", "wind_s"
+            "pwm1_1", "pwm1_2", "pwm1_3", "pwm2_1", "pwm2_2", "pwm2_3",
+            "pwm3_1", "pwm3_2", "pwm3_3", "npm", "pm1_1", "pm1_2", "pm1_3",
+            "pm2_1", "pm2_2", "pm2_3", "pm3_1", "pm3_2", "pm3_3",
+            "temp", "humi", "o3", "co", "no2", "so2", "wind_d", "wind_s"
         ]
-        
+
         index_map = {original_order[i]: i for i in range(len(original_order))}
+        data_list = combined_data.split(',')
         reordered_data = [data_list[index_map[col]] for col in desired_order]
         combined_data = ','.join(reordered_data)
         print(f"Reordered data: {combined_data}")
         
-        #apm2 server 데이터 전송
+        # APM2, Sejong 서버 및 모듈로 데이터 전송
         send_apm_data(combined_data, apm2_url)
-        
-        #sejong server 데이터 전송
         send_sejong_data(combined_data, sejong_url)
-        # 모듈 데이터 전송
         send_sejong_data_two(combined_data, sejong_url_module)
-    
-    lock.release()
-    
-#60초마다 데이터를 전송하기 위한 스케줄러 (람다를 써야 함수에 인자를 넣을 수 있음, 함수의 결과값을 넣을 수 없음)., 스케줄러 등록
-schedule.every(60).seconds.do(lambda: OneMinute(rpm_url + '/la'))
+    except Exception as exc:
+        print(f"Error occurred: {exc}")
+    finally:
+        print("Releasing lock")
+        lock.release()
+
+
 
 # TCP통신 함수
+def handle_connection(conn, addr):
+    print(f'Connected to {addr}')
+    while True:
+        data = conn.recv(1024)
+        if not data:
+            break
+        data = data.decode('utf-8').strip()
+        if data.startswith('M'):
+            CommandFanControl(data)
+    conn.close()
+
+def schedule_tasks():
+    while True:
+        time.sleep(60)
+        print("time's up")
+        OneMinute(rpm_url + '/la')
+        
+
 def server():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind(('localhost', port))
         s.listen()
         print(f"Listening on port {port}...")
-        
-        retry = True
 
-        while retry:
-            try:       
-                conn, addr = s.accept()
-                with conn:
-                    print(f'Connected to {addr}')
-                    while retry:
-                        # 데이터 크기
-                        data = conn.recv(1024)
+        # 스케줄 작업을 별도의 스레드에서 실행
+        scheduler_thread = threading.Thread(target=schedule_tasks, daemon=True)
+        scheduler_thread.start()
 
-                        # TCP로 데이터가 오지 않으면 서버 종료
-                        if not data:
-                            break
-                        data = data.decode('utf-8').strip()
-                        if data.startswith('M'):
-                            CommandFanControl(data)
-                            
-                        schedule.run_pending()
-            except Exception as server_err:
-                print(f"Server error: {server_err}")
-                retry = False
+        while True:
+            conn, addr = s.accept()
+            client_thread = threading.Thread(target=handle_connection, args=(conn, addr))
+            client_thread.start()
                 
 def signal_handler(sig, frame):
     global running
@@ -448,7 +440,7 @@ def signal_handler(sig, frame):
     ser2.close()
     ser3.close()
     ser4.close()
-    
+    #who are you dont touch
     sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
