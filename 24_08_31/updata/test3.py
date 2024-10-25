@@ -61,6 +61,8 @@ global sejong_start_signal      # 세종대 데이터 수신 함수 시작 신�
 global sejong_data_counter_1, sejong_data_counter_2, sejong_data_counter_3     # 세종대 데이터 양 카운터
 global trainDataPath, testDataPath, state_path, sensor_parameter, stopConditionValue
 global moduleNum                # 모듈 번호
+global counter_1_init, counter_2_init, counter_3_init
+global change_1, change_2, change_3
 
 # 데이터 형식 :  ["RPMdatatime, APMdatetime", "rpm before correction", "rpm after correction",
 #                            "pwm1_1", "pwm1_2", "pwm1_3",
@@ -252,6 +254,8 @@ def sejong_motor_data_get():
     global sejong_start_signal
     global sejong_data_counter_1, sejong_data_counter_2, sejong_data_counter_3
     global moduleNum
+    global counter_1_init, counter_2_init, counter_3_init
+    global change_1, change_2, change_3
     
     # 세종대 명령어 데이터 가져오는 부분
     getData = get_data(sejong_url_motor)
@@ -267,10 +271,16 @@ def sejong_motor_data_get():
     moduleNum = sensor_parameter[1]
     if moduleNum == '1':
         sejong_data_counter_1 = stopConditionValue
+        counter_1_init = stopConditionValue
+        change_1 = 0
     elif moduleNum == '2':
         sejong_data_counter_2 = stopConditionValue
+        counter_2_init = stopConditionValue
+        change_2 = 0
     elif moduleNum == '3':
         sejong_data_counter_3 = stopConditionValue
+        counter_3_init = stopConditionValue
+        change_3 = 0
     
     # 모터 제어 명령어 전송
     CommandFanControl(sensor_parameter)
@@ -306,11 +316,13 @@ def send_sejong_request(data, url):
     return response
 
 # 세종대 데이터 전송 함수 (모듈별로 데이터 전송) 
-def send_sejong_data(data, url):
+def send_sejong_data(data):
     global sejong_data_counter_1, sejong_data_counter_2, sejong_data_counter_3
     global moduleNum
     global sejong_start_signal
     global trainDataPath, testDataPath, state_path
+    global counter_1_init, counter_2_init, counter_3_init
+    global change_1, change_2, change_3
     
     where_list = data.split(',')
     
@@ -323,9 +335,17 @@ def send_sejong_data(data, url):
         module_1 = where_list[:6] + where_list[13:16] + where_list[22:]
         module_1_arr = process_module_data(module_1)
         con0_1_sejong_str = create_sejong_json(module_1_arr)
-        send_sejong_request(con0_1_sejong_str, trainDataPath)
-        send_sejong_request(con0_1_sejong_str, testDataPath)
-        sejong_data_counter_1 -= 1
+        
+        if counter_1_init == 0:
+            change_1 = 1
+            
+        if change_1 == 0:
+            send_sejong_request(con0_1_sejong_str, trainDataPath)
+            counter_1_init -= 1
+        elif change_1 == 1:
+            send_sejong_request(con0_1_sejong_str, testDataPath)
+            sejong_data_counter_1 -= 1
+            
         print(f"send_sejong_data {moduleNum}moudle finished, remainremaining data: {sejong_data_counter_1}")
         
     elif(moduleNum == '2'):
@@ -337,10 +357,18 @@ def send_sejong_data(data, url):
         module_2 = where_list[:3] + where_list[6:9] + where_list[16:19] + where_list[22:]
         module_2_arr = process_module_data(module_2)
         con0_2_sejong_str = create_sejong_json(module_2_arr)
-        send_sejong_request(con0_2_sejong_str, trainDataPath)
-        send_sejong_request(con0_2_sejong_str, testDataPath)
-        sejong_data_counter_2 -= 1
-        print(f"send_sejong_data {moduleNum}moudle finished, remainremaining data: {sejong_data_counter_1}")
+        
+        if counter_2_init == 0:
+            change_2 = 1
+            
+        if change_2 == 0:
+            send_sejong_request(con0_2_sejong_str, trainDataPath)
+            counter_2_init -= 1
+        elif change_2 == 1:
+            send_sejong_request(con0_2_sejong_str, testDataPath)
+            sejong_data_counter_2 -= 1
+            
+        print(f"send_sejong_data {moduleNum}moudle finished, remainremaining data: {sejong_data_counter_2}")
         
     elif(moduleNum == '3'):
         if(sejong_data_counter_3 == 0):
@@ -351,10 +379,18 @@ def send_sejong_data(data, url):
         module_3 = where_list[:3] + where_list[9:12] + where_list[19:22] + where_list[22:]
         module_3_arr = process_module_data(module_3)
         con0_3_sejong_str = create_sejong_json(module_3_arr)
-        send_sejong_request(con0_3_sejong_str, trainDataPath)
-        send_sejong_request(con0_3_sejong_str, testDataPath)
-        sejong_data_counter_3 -= 1
-        print(f"send_sejong_data {moduleNum}moudle finished, remainremaining data: {sejong_data_counter_1}")
+        
+        if counter_3_init == 0:
+            change_3 = 1
+            
+        if change_3 == 0:
+            send_sejong_request(con0_3_sejong_str, trainDataPath)
+            counter_3_init -= 1
+        elif change_3 == 1:
+            send_sejong_request(con0_3_sejong_str, testDataPath)
+            sejong_data_counter_3 -= 1
+            
+        print(f"send_sejong_data {moduleNum}moudle finished, remainremaining data: {sejong_data_counter_3}")
         
         
 # 1분마다 실행되는 함수
@@ -404,6 +440,7 @@ def OneMinute(url):
             "temp", "humi", "o3", "co", "no2", "so2",
             "wind_d", "wind_s", "npm", "rpm before correction", "rpm after correction"
         ]
+        
         desired_order = [
             "APM_datetime", "rpm before correction", "rpm after correction",
             "pwm1_1", "pwm1_2", "pwm1_3", "pwm2_1", "pwm2_2", "pwm2_3",
@@ -422,7 +459,7 @@ def OneMinute(url):
         send_apm_data(combined_data, apm2_url)
         
         if(sejong_start_signal == True):
-            send_sejong_data(combined_data, sejong_url)
+            send_sejong_data(combined_data)
                 
             
     except Exception as exc:
@@ -438,12 +475,13 @@ def handle_connection(conn, addr):
     print(f'Connected to {addr}')
     while True:
         data = conn.recv(1024)
+        #print(data)
         if not data:
             break
         data = data.decode('utf-8').strip()
         if data.startswith('M'):
             CommandFanControl(data)
-        elif(data.startswith('{')):
+        elif(data.startswith('[')):
             sejong_motor_data_get()
     conn.close()
 
