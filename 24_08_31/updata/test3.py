@@ -74,6 +74,8 @@ global moduleNum                # 모듈 번호
 #                            "no2", "so2", "wind_d", "wind_s"]
 save_data = []
 
+sejong_start_signal = False
+
 # 임계영역 보호를 위한 Lock 생성 ( 데이터 수집과 제어 명령어 전송과의 충돌 방지 )
 lock = threading.Lock()
 
