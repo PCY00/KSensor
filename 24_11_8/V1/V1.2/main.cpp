@@ -178,7 +178,8 @@ int main() {
 
     std::string apm2_url = "http://114.71.220.59:2021/Mobius/justin/ss/data";
     std::string rpm_url = "http://114.71.220.59:2021/Mobius/justin/ss/RPMdata/la";
-
+    std::string FanSpeed_url = "http://114.71.220.59:2021/Mobius/justin/ss/fanspeed";
+    
     std::cout << "start" << std::endl;
 
     // SendDataEveryMinute 함수를 별도 스레드로 실행
@@ -218,6 +219,8 @@ int main() {
 
         if (action == "P1" || action == "P2" || action == "P3") {
             sendCommand(file, command);
+            std::this_thread::sleep_for(std::chrono::seconds(5));
+            send_value_to_server(FanSpeed_url, readData(file, 1));
         } else {
             std::cerr << "알 수 없는 명령입니다: " << action << std::endl;
         }
@@ -230,19 +233,3 @@ int main() {
     cleanup(0);
     return 0;
 }
-
-
-
-/*
-
-        else if (action == "READ1") {
-            std::string receiveData = readData(file, 0);
-            std::cout << "Received from Arduino: " << receiveData << std::endl;
-            send_value_to_server(url, receiveData);
-        } else if (action == "READ2") {
-            std::string receiveData = readData(file, 1);
-            std::cout << "Received from Arduino: " << receiveData << std::endl;
-            send_value_to_server(url, receiveData);
-        } 
-*/
-
