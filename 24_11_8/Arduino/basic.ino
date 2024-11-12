@@ -7,6 +7,7 @@
 #define WRITE_REGISTER 0x01
 #define READ_REGISTER 0x02
 #define START_SIGNAL 0xA0
+#define GET_FEEDBACK 0xA1
 
 String con_data = "0,0,0";
 
@@ -34,9 +35,10 @@ PMS pms3(Serial3);
 PMS::DATA data3;
 
 bool startReceived = false;
+bool getFeedback = false;
 
-uint16_t d1, d2, d3;
-
+uint16_t d1, d2 = 0, d3 = 0;
+String real_RPM = "";
 
 void setup() {
   Wire.begin(SLAVE_ADDRESS);
@@ -97,11 +99,12 @@ void loop() {
       }
 
       if (abs(error) <= 30 && !targetReached[i]) {
-        Serial.print("M1_P");
-        Serial.print(i+1);
-        Serial.print("_");
-        Serial.print(realRPM);
-        Serial.println();
+        //Serial.print("M1_P");
+        //Serial.print(i+1);
+        //Serial.print("_");
+        //Serial.print(realRPM);
+        //Serial.println();
+        real_RPM = "M1_P" + (String)(i+1) + "_" + (String)realRPM;
         targetReached[i] = true;
       }
 
@@ -145,7 +148,9 @@ void receiveEvent(int howMany) {
     else if (registerAddress == READ_REGISTER && Wire.available() > 0) {
         int signal = Wire.read();
         if (signal == START_SIGNAL) {
-            startReceived = true;
+          startReceived = true;
+        }else if(signal == GET_FEEDBACK){
+          getFeedback = true;
         }
     }
 }
@@ -157,20 +162,20 @@ void requestEvent() {
         
         // pms data read
         pms1.requestRead();
-        pms2.requestRead();
-        pms3.requestRead();
+        //pms2.requestRead();
+        //pms3.requestRead();
 
         if(pms1.readUntil(data1)){
           d1 = data1.PM_AE_UG_2_5;
         }
 
-        if(pms2.readUntil(data2)){
-          d2 = data2.PM_AE_UG_2_5;
-        }
+        //if(pms2.readUntil(data2)){
+        //  d2 = data2.PM_AE_UG_2_5;
+        //}
 
-        if(pms3.readUntil(data3)){
-          d3 = data3.PM_AE_UG_2_5;
-        }
+        //if(pms3.readUntil(data3)){
+        //  d3 = data3.PM_AE_UG_2_5;
+        //}
         
         con_data = (String)targetRPMs[0] + "," + (String)targetRPMs[1] + "," + (String)targetRPMs[2] + "," + (String)d1 + "," + (String)d2 + "," + (String)d3;
         
@@ -181,6 +186,16 @@ void requestEvent() {
         Wire.write((uint8_t*)buffer, len);
         
         Serial.println(buffer);
+    }
+    
+    else if(getFeedback){
+      int len = real_RPM.length() + 1;
+      char buffer[len];
+      real_RPM.toCharArray(buffer, len);
+
+      Wire.write((uint8_t*)buffer, len);
+        
+      Serial.println(buffer);
     }
 }
 
