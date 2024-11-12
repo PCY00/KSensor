@@ -1,1 +1,3 @@
-TCP 통신을 활용한 통신 
+## 수정사항
+- tcp.cpp & tcp.h 추가
+- main.cpp 수정
