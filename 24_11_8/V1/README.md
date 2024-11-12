@@ -12,7 +12,7 @@ sudo apt-get install libi2c-dev
 ## 빌드 방법
 
 ```
-g++ main.cpp i2c.cpp http.cpp -o main -li2c -lcurl -ljsoncpp -std=c++11
+g++ main.cpp i2c.cpp http.cpp tcp.cpp -o main -li2c -lcurl -ljsoncpp -pthread -std=c++11
 ```
 
 
