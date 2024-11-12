@@ -219,7 +219,7 @@ int main() {
 
         if (action == "P1" || action == "P2" || action == "P3") {
             sendCommand(file, command);
-            std::this_thread::sleep_for(std::chrono::seconds(5));
+            std::this_thread::sleep_for(std::chrono::seconds(15));
             send_value_to_server(FanSpeed_url, readData(file, 1));
         } else {
             std::cerr << "알 수 없는 명령입니다: " << action << std::endl;
@@ -233,3 +233,6 @@ int main() {
     cleanup(0);
     return 0;
 }
+
+
+
